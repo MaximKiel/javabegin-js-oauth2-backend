@@ -15,6 +15,7 @@ import org.springframework.security.web.SecurityFilterChain;
 import org.springframework.web.cors.CorsConfiguration;
 import org.springframework.web.cors.CorsConfigurationSource;
 import org.springframework.web.cors.UrlBasedCorsConfigurationSource;
+import ru.javabegin.oauth2.backend.exeption.OAuth2ExceptionHandler;
 import ru.javabegin.oauth2.backend.utils.KCRoleConverter;
 
 import java.util.Arrays;
@@ -46,18 +47,19 @@ public class SpringSecurityConfig {
                 .antMatchers("/admin/*").hasRole("admin") // CRUD для работы с пользователями
                 .antMatchers("/user/*").hasRole("user") // действия самого пользователям (регистрация и пр.)
                 .anyRequest().authenticated() // остальной API будет доступен только аутентифицированным пользователям
-                .and()
 
+                .and()
                 .csrf().disable() // отключаем встроенную защиту от CSRF атак, т.к. используем свою, из OAUTH2
                 .cors()// разрешает выполнять OPTIONS запросы от клиента (preflight запросы) без авторизации
+
                 .and()
-
-
                 // добавляем новые настройки, не связанные с предыдущими
-
                 .oauth2ResourceServer() // включаем защиту OAuth2 для данного backend
                 .jwt()
-                .jwtAuthenticationConverter(jwtAuthenticationConverter); // добавляем конвертер ролей из JWT в Authority (Role)
+                .jwtAuthenticationConverter(jwtAuthenticationConverter) // добавляем конвертер ролей из JWT в Authority (Role)
+
+                .and()
+                .authenticationEntryPoint(new OAuth2ExceptionHandler());
 
         return http.build();
     }
